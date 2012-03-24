@@ -152,11 +152,12 @@ typedef struct CocoaGame_VideoConfig {
 	CocoaGame_VideoDisposition disposition;
 	
 	/// Used by COCOAGAME_VIDEO_FULLSCREEN_SET_MODE, COCOAGAME_VIDEO_WINDOW and COCOAGAME_VIDEO_FULLSCREEN_WINDOW.
-	/// In COCOAGAME_VIDEO_FULLSCREEN_WINDOW, the width and height are recorded for use by
-	/// CocoaGame_ToggleFullScreenWindow().
+	/// In COCOAGAME_VIDEO_FULLSCREEN_WINDOW, the width and height supplied to CocoaGame_InitVideo() are recorded for 
+	/// use when dynamically switching between fullscreen and window (using CocoaGame_ToggleFullScreenWindow() or 
+	/// Lion's fullscreen menu item, for example).
 	CocoaGame_VideoMode mode;
 	
-	/// Title for the window, in UTF-8.
+	/// Title for the window, in UTF-8. Must remain valid until CocoaGame_Shutdown() is called.
 	const char *title; 
 	
 	/// If TRUE, don't require an exact match for the video mode but accept the closest match.

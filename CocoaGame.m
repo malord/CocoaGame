@@ -37,8 +37,13 @@
 // Interfaces
 //
 
-@interface CocoaGame_Window : NSWindow
+@interface NSWindow (CocoaGameAdditions)
 
+- (BOOL)cocoaGame_IsFullScreen;
+
+@end
+
+@interface CocoaGame_Window : NSWindow
 @end
 
 #if defined(MAC_OS_X_VERSION_10_6) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
@@ -249,7 +254,7 @@ static const CocoaGame_VideoDispositionTraits videoTraits[COCOAGAME_VIDEO__MAX_D
 		.acquiresDisplays = FALSE,
 		.hidesMenuBar = TRUE,
 		.rendersToView = TRUE,
-		.hideGlobalCursor = TRUE, // Should be FALSE, but for 10.4.
+		.hideGlobalCursor = TRUE, // 10.4 needs this to be TRUE.
 	},
 };
 
@@ -540,7 +545,7 @@ BOOL CocoaGame_ParseVideoMode(const char *str, CocoaGame_VideoMode *videoMode)
 	if (sscanf(str, "%dx%dx%d", &videoMode->width, &videoMode->height, &videoMode->bits) < 2)
 		return NO;
 		
-	if (videoMode->width < 320 || videoMode->height < 320)
+	if (videoMode->width < 1 || videoMode->height < 1)
 		return NO;
 		
 	if (videoMode->bits < 16)
@@ -761,8 +766,8 @@ CocoaGame_Bool CocoaGame_InitVideo(const CocoaGame_VideoConfig *config)
 	// Remember these values for CocoaGame_ToggleFullScreenWindow().
 	windowWidth = config->mode.width;
 	windowHeight = config->mode.height;
-	
-	// The InitVideo function should must set these.
+
+	// The InitVideo function must set these.
 	videoConfig.disposition = COCOAGAME_VIDEO_NONE; 
 	videoConfig.mode.width = 0;
 	videoConfig.mode.height = 0;
@@ -958,9 +963,8 @@ void CocoaGame_ToggleFullScreenWindow(void)
 	NSCAssert(result, @"Failed to toggle full-screen/window.");
 	
 	[reuseView release];
-	
-	CocoaGame_InternalSetMouseDeltaMode(wantMouseDeltaMode);
-	CocoaGame_InternalSetMouseCursorVisible(wantMouseCursorVisible);
+
+	CocoaGame_ImplementAppMouseMode();
 	
 	CocoaGame_UpdateMousePositionOutsideOfEventStream();
 	
@@ -1043,6 +1047,8 @@ static CocoaGame_Bool CocoaGame_InitVideoFullScreenWindow(const CocoaGame_VideoC
 		// If you want to wait for the fullscreen toggle animation to run before continuing game startup, uncomment.
 		while (windowIsTogglingFullScreen)
 			CocoaGame_Poll();
+
+		videoConfig.disposition = COCOAGAME_VIDEO_FULLSCREEN_WINDOW;
 
 		return TRUE;
 	}
@@ -1797,7 +1803,10 @@ void CocoaGame_SetMouseCursorVisible(CocoaGame_Bool cursorVisible)
 
 static void CocoaGame_InternalSetMouseCursorVisible(CocoaGame_Bool cursorVisible)	 
 {
-	if (CocoaGame_GetVideoTraits()->hideGlobalCursor) {
+	// This hack is needed to simultaneously support 10.4 and Lion
+	BOOL isLionFullScreenWindow = videoConfig.disposition == COCOAGAME_VIDEO_FULLSCREEN_WINDOW && videoConfig.useLionFullScreenSupport && [window respondsToSelector:@selector(toggleFullScreen:)];
+
+	if (CocoaGame_GetVideoTraits()->hideGlobalCursor && ! isLionFullScreenWindow) {
 		if (cursorVisible) {
 			if (nsCursorHidden) {
 				[NSCursor unhide];
@@ -2024,6 +2033,19 @@ uint32_t CocoaGame_GetMillisecondTimer(void)
 
 	return (uint32_t) bigTime;
 }
+
+//
+// NSWindow (CocoaGameAdditions)
+//
+
+@implementation NSWindow (CocoaGameAdditions)
+
+- (BOOL)cocoaGame_IsFullScreen
+{
+	return ([self styleMask] & NSFullScreenWindowMask) != 0;
+}
+
+@end
 
 //
 // CocoaGame_Window
@@ -2262,9 +2284,26 @@ uint32_t CocoaGame_GetMillisecondTimer(void)
 
 	openGLUpdateRequired = TRUE;
 	
-	if (videoConfig.disposition == COCOAGAME_VIDEO_WINDOW) {
+	if (videoConfig.disposition == COCOAGAME_VIDEO_WINDOW && ! [[self window] cocoaGame_IsFullScreen]) {
 		windowWidth = [self bounds].size.width;
 		windowHeight = [self bounds].size.height;
+	}
+
+	if (videoConfig.disposition == COCOAGAME_VIDEO_FULLSCREEN_WINDOW || videoConfig.disposition == COCOAGAME_VIDEO_WINDOW) {
+		CocoaGame_VideoDisposition disposition;
+		// I thought this might be safer than overriding -[NSWindow toggleFullScreen:]
+		if ([[self window] cocoaGame_IsFullScreen])
+			disposition = COCOAGAME_VIDEO_FULLSCREEN_WINDOW;
+		else
+			disposition = COCOAGAME_VIDEO_WINDOW;
+
+		if (videoConfig.disposition != disposition) {
+			// We've switched fullscreen/window.
+			CocoaGame_ImplementDefaultMouseMode();
+			videoConfig.disposition = disposition;
+			CocoaGame_ImplementAppMouseMode();
+			CocoaGame_UpdateMousePositionOutsideOfEventStream();
+		}
 	}
 }
 
