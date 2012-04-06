@@ -24,9 +24,9 @@
 		4D00412711E69CB900014111 /* CocoaGame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CocoaGame.h; sourceTree = "<group>"; };
 		4D00412811E69CB900014111 /* CocoaGame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CocoaGame.m; sourceTree = "<group>"; };
 		4D00413211E69CF000014111 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
-		4DC6F4A61168DC0E00EFFD2A /* libCocoaGame2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCocoaGame2.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		4DC6F4A61168DC0E00EFFD2A /* libcocoagame2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcocoagame2.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2A6134D07B89F6200DD23D3 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
-		D2AAC0C705546C1D00DB518D /* libCocoaGame2.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libCocoaGame2.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2AAC0C705546C1D00DB518D /* libcocoagame2.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libcocoagame2.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,8 +53,8 @@
 		034768DFFF38A50411DB9C8B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D2AAC0C705546C1D00DB518D /* libCocoaGame2.dylib */,
-				4DC6F4A61168DC0E00EFFD2A /* libCocoaGame2.a */,
+				D2AAC0C705546C1D00DB518D /* libcocoagame2.dylib */,
+				4DC6F4A61168DC0E00EFFD2A /* libcocoagame2.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -143,7 +143,7 @@
 			);
 			name = "CocoaGame2-Static";
 			productName = "CocoaGame2-Static";
-			productReference = 4DC6F4A61168DC0E00EFFD2A /* libCocoaGame2.a */;
+			productReference = 4DC6F4A61168DC0E00EFFD2A /* libcocoagame2.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 		D2AAC0C605546C1D00DB518D /* CocoaGame2-Dynamic */ = {
@@ -160,7 +160,7 @@
 			);
 			name = "CocoaGame2-Dynamic";
 			productName = DynamicLibrary;
-			productReference = D2AAC0C705546C1D00DB518D /* libCocoaGame2.dylib */;
+			productReference = D2AAC0C705546C1D00DB518D /* libcocoagame2.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
@@ -248,7 +248,7 @@
 				GCC_WARN_UNUSED_VALUE = YES;
 				INSTALL_PATH = "@executable_path";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
-				PRODUCT_NAME = libCocoaGame2;
+				PRODUCT_NAME = libcocoagame2;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = macosx;
 			};
@@ -291,7 +291,7 @@
 				GCC_WARN_UNUSED_VALUE = YES;
 				INSTALL_PATH = "@executable_path";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
-				PRODUCT_NAME = libCocoaGame2;
+				PRODUCT_NAME = libcocoagame2;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = macosx;
 			};
@@ -367,7 +367,7 @@
 				GCC_WARN_UNUSED_VALUE = YES;
 				INSTALL_PATH = /usr/local/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
-				PRODUCT_NAME = CocoaGame2;
+				PRODUCT_NAME = cocoagame2;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = macosx;
 				ZERO_LINK = NO;
@@ -411,7 +411,7 @@
 				GCC_WARN_UNUSED_VALUE = YES;
 				INSTALL_PATH = "@executable_path";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
-				PRODUCT_NAME = libCocoaGame2;
+				PRODUCT_NAME = libcocoagame2;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = macosx;
 			};
@@ -450,7 +450,7 @@
 				GCC_WARN_UNUSED_VALUE = YES;
 				INSTALL_PATH = /usr/local/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
-				PRODUCT_NAME = CocoaGame2;
+				PRODUCT_NAME = cocoagame2;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = macosx;
 			};
@@ -491,7 +491,7 @@
 				GCC_WARN_UNUSED_VALUE = YES;
 				INSTALL_PATH = /usr/local/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
-				PRODUCT_NAME = CocoaGame2;
+				PRODUCT_NAME = cocoagame2;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = macosx;
 				ZERO_LINK = NO;
