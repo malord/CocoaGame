@@ -73,28 +73,28 @@
 // Globals
 //
 
-const CocoaGame_VideoConfig COCOAGAME_VIDEOCONFIG_DEFAULTS = { 
-	.disposition = COCOAGAME_VIDEO_FULLSCREEN_WINDOW, 
+const CocoaGame_VideoConfig COCOAGAME_VIDEOCONFIG_DEFAULTS = {
+	.disposition = COCOAGAME_VIDEO_FULLSCREEN_WINDOW,
 	.mode = {
-		.width = 800, 
-		.height = 600, 
+		.width = 800,
+		.height = 600,
 		.bits = 32
 	},
-	.title = NULL, 
-	.acceptClosestMode = FALSE, 
+	.title = NULL,
+	.acceptClosestMode = FALSE,
 	.captureDisplay = TRUE,
 	.enableWindowResizing = TRUE,
 	.fullScreenWindowLevel = COCOAGAME_WINDOWLEVEL_DEFAULT,
 	.useLionFullScreenSupport = TRUE,
 };
-	
-const CocoaGame_GLConfig COCOAGAME_GLCONFIG_DEFAULTS = { 
-	.colourBits = 24, 
-	.depthBits = 24, 
-	.alphaBits = 8, 
-	.stencilBits = 8, 
-	.msaa = 4, 
-	.swapInterval = 1 
+
+const CocoaGame_GLConfig COCOAGAME_GLCONFIG_DEFAULTS = {
+	.colourBits = 24,
+	.depthBits = 24,
+	.alphaBits = 8,
+	.stencilBits = 8,
+	.msaa = 4,
+	.swapInterval = 1
 };
 
 //
@@ -190,15 +190,15 @@ static BOOL mouseIsInView;
 static CGDisplayFadeReservationToken fadeToken = kCGDisplayFadeReservationInvalidToken;
 static float fadeTime = 1.0f / 3.0f;
 
-static CocoaGame_VideoConfig videoConfig = { 
-	.disposition = COCOAGAME_VIDEO_NONE, 
+static CocoaGame_VideoConfig videoConfig = {
+	.disposition = COCOAGAME_VIDEO_NONE,
 	.mode = {
-		.width = 0, 
-		.height = 0, 
+		.width = 0,
+		.height = 0,
 		.bits = 0
 	},
-	.title = NULL, 
-	.acceptClosestMode = FALSE, 
+	.title = NULL,
+	.acceptClosestMode = FALSE,
 	.captureDisplay = FALSE,
 	.enableWindowResizing = FALSE
 };
@@ -220,7 +220,7 @@ static const CocoaGame_VideoDispositionTraits videoTraits[COCOAGAME_VIDEO__MAX_D
 		.rendersToView = FALSE,
 		.hideGlobalCursor = FALSE,
 	},
-	
+
 	// Window
 	{
 		.shouldFade = FALSE,
@@ -229,7 +229,7 @@ static const CocoaGame_VideoDispositionTraits videoTraits[COCOAGAME_VIDEO__MAX_D
 		.rendersToView = TRUE,
 		.hideGlobalCursor = FALSE,
 	},
-	
+
 	// Fullscreen
 	{
 		.shouldFade = TRUE,
@@ -238,7 +238,7 @@ static const CocoaGame_VideoDispositionTraits videoTraits[COCOAGAME_VIDEO__MAX_D
 		.rendersToView = FALSE,
 		.hideGlobalCursor = TRUE,
 	},
-	
+
 	// Fullscreen set-mode
 	{
 		.shouldFade = TRUE,
@@ -247,7 +247,7 @@ static const CocoaGame_VideoDispositionTraits videoTraits[COCOAGAME_VIDEO__MAX_D
 		.rendersToView = FALSE,
 		.hideGlobalCursor = TRUE,
 	},
-	
+
 	// Fullscreen window
 	{
 		.shouldFade = FALSE,
@@ -304,7 +304,7 @@ void CocoaGame_Trace(const char *format, ...)
 
 	if (traceEnabled)
 		traceHandler(format, argptr);
-	
+
 	va_end(argptr);
 }
 
@@ -351,7 +351,7 @@ CocoaGame_GLInfo *CocoaGame_GetGLInfo2(const CocoaGame_GLConfig *fakeConfig)
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	CocoaGame_GLInfo *info;
 	NSOpenGLContext *tempContext = nil;
-	
+
 	if (! openGLContext) {
 		NSOpenGLPixelFormatAttribute attribs[40];
 		unsigned int attribCount = 0;
@@ -375,7 +375,7 @@ CocoaGame_GLInfo *CocoaGame_GetGLInfo2(const CocoaGame_GLConfig *fakeConfig)
 
 		// Terminate the attributes.
 		attribs[attribCount++] = (NSOpenGLPixelFormatAttribute) 0;
-		
+
 		NSCAssert(attribCount <= countof(attribs), @"Overflowed attribs array");
 
 		NSOpenGLPixelFormat *pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attribs];
@@ -387,30 +387,30 @@ CocoaGame_GLInfo *CocoaGame_GetGLInfo2(const CocoaGame_GLConfig *fakeConfig)
 
 		tempContext = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
 		[pixelFormat release];
-		
+
 		if (! tempContext) {
 			[pool drain];
 			return NULL;
 		}
-		
+
 		[tempContext makeCurrentContext];
 		[tempContext setFullScreen];
 	}
-	
+
 	info = calloc(1, sizeof(CocoaGame_GLInfo));
 	info->version = strdup((const char *) glGetString(GL_VERSION));
 	info->extensions = strdup((const char *) glGetString(GL_EXTENSIONS));
 	info->renderer = strdup((const char *) glGetString(GL_RENDERER));
 	info->vendor = strdup((const char *) glGetString(GL_VENDOR));
-	
+
 	if (tempContext) {
-		if ([NSOpenGLContext currentContext] == tempContext) 
+		if ([NSOpenGLContext currentContext] == tempContext)
 			[NSOpenGLContext clearCurrentContext];
-			
+
 		[tempContext clearDrawable];
 		[tempContext release];
 	}
-	
+
 	[pool drain];
 	return info;
 }
@@ -432,23 +432,23 @@ void CocoaGame_FreeGLInfo(CocoaGame_GLInfo *info)
 CocoaGame_Bool CocoaGame_Init(void)
 {
 	NSCAssert(! isInitialised, @"CocoaGame already initialised.");
-	
+
 	whichDisplay = kCGDirectMainDisplay;
-	
+
 	originalMode = [(NSDictionary *) CGDisplayCurrentMode(whichDisplay) copy];
 	NSCAssert(originalMode, @"Couldn't get original display mode.");
 	if (! originalMode)
 		return FALSE;
-	
+
 	if (! CocoaGame_BuildModeList())
 		return FALSE;
-	
+
 	isInitialised = TRUE;
 	shouldQuit = FALSE;
 	queueRead = queueWrite = 0;
 	modifiers = 0; // force an event for any modifiers
 	videoConfig.disposition = COCOAGAME_VIDEO_NONE;
-	
+
 	window = nil;
 	view = nil;
 	delegate = nil;
@@ -466,25 +466,25 @@ static int CocoaGame_VideoModeCompare(const void *va, const void *vb)
 {
 	const CocoaGame_VideoMode *a = (const CocoaGame_VideoMode *) va;
 	const CocoaGame_VideoMode *b = (const CocoaGame_VideoMode *) vb;
-	
+
 	if (a->bits > b->bits)
 		return -1;
-		
+
 	if (a->bits < b->bits)
 		return 1;
-	
+
 	if (a->width > b->width)
 		return -1;
-		
+
 	if (a->width < b->width)
 		return 1;
-		
+
 	if (a->height > b->height)
 		return -1;
-		
+
 	if (a->height < b->height)
 		return 1;
-		
+
 	return 0;
 }
 
@@ -492,38 +492,38 @@ CocoaGame_Bool CocoaGame_BuildModeList(void)
 {
 	// Owned by the system - don't release.
 	NSArray *modeList = (NSArray *) CGDisplayAvailableModes(whichDisplay);
-	
+
 	videoModes = realloc(videoModes, [modeList count] * sizeof(CocoaGame_VideoMode));
 	videoModeCount = (int) [modeList count];
-	
+
 	int i;
 	for (i = 0; i != videoModeCount; ++i) {
 		// Owned by the system - don't release.
 		NSDictionary *mode = (NSDictionary *) [modeList objectAtIndex:i];
-		
+
 		CocoaGame_GetVideoModeFromDictionary(mode, &videoModes[i]);
 	}
-	
+
 	qsort(videoModes, videoModeCount, sizeof(*videoModes), &CocoaGame_VideoModeCompare);
-	
+
 	CocoaGame_VideoMode *out = videoModes;
 	const CocoaGame_VideoMode *in = videoModes;
 	const CocoaGame_VideoMode *inEnd = videoModes + videoModeCount;
-	
+
 	*out++ = *in++;
-	
+
 	for (; in != inEnd; ++in) {
 		if (! CocoaGame_VideoModesEqual(in - 1, in))
 			*out++ = *in;
 	}
-	
+
 	int newVideoModeCount = (int) (out - videoModes);
-	
+
 	CocoaGame_Trace("%s: %d video modes (%d duplicates removed).\n", __FUNCTION__, newVideoModeCount, videoModeCount - newVideoModeCount);
 	videoModeCount = newVideoModeCount;
-	
+
 	videoModes = realloc(videoModes, videoModeCount * sizeof(CocoaGame_VideoMode));
-	
+
 	return TRUE;
 }
 
@@ -544,13 +544,13 @@ BOOL CocoaGame_ParseVideoMode(const char *str, CocoaGame_VideoMode *videoMode)
 	videoMode->bits = 32;
 	if (sscanf(str, "%dx%dx%d", &videoMode->width, &videoMode->height, &videoMode->bits) < 2)
 		return NO;
-		
+
 	if (videoMode->width < 1 || videoMode->height < 1)
 		return NO;
-		
+
 	if (videoMode->bits < 16)
 		return NO;
-		
+
 	return YES;
 }
 
@@ -562,24 +562,24 @@ int CocoaGame_GetVideoModeCount(void)
 const CocoaGame_VideoMode *CocoaGame_GetVideoMode(int modeNumber)
 {
 	NSCAssert(modeNumber >= 0 && modeNumber < videoModeCount, @"Invalid mode number");
-	
-	return &videoModes[modeNumber];	   
+
+	return &videoModes[modeNumber];
 }
 
 void CocoaGame_Shutdown(void)
 {
 	if (! isInitialised)
 		return;
-	
+
 	CocoaGame_ShutdownVideo();
 	CocoaGame_FadeFromBlack();
-	
+
 	free(videoModes);
 	videoModes = NULL;
 	videoModeCount = 0;
 
 	CocoaGame_DestroyDelegate();
-	
+
 	isInitialised = FALSE;
 
 	CocoaGame_Trace("%s: shutdown complete.\n", __FUNCTION__);
@@ -603,10 +603,10 @@ static void CocoaGame_DefaultAbortWithMessageHandler(const char *title, const ch
 	char buf[1024];
 	vsnprintf(buf, sizeof(buf), format, argptr);
 	buf[sizeof(buf) - 1] = 0;
-	
+
 	CocoaGame_Shutdown();
 	NSRunAlertPanel([NSString stringWithUTF8String:title], @"%@", NSLocalizedString(@"Quit", @""), nil, nil, [NSString stringWithUTF8String:buf]);
-	
+
 	exit(1);
 }
 
@@ -621,54 +621,54 @@ static void CocoaGame_ShutdownVideo(void)
 	NSCAssert(isInitialised, @"");
 
 	// Destroying a window while it's in the process of toggling fullscreen is bad.
-	while (windowIsTogglingFullScreen) 
+	while (windowIsTogglingFullScreen)
 		CocoaGame_Poll();
 
 	if (CocoaGame_GetVideoTraits()->shouldFade)
 		CocoaGame_FadeToBlack();
-		
+
 	CocoaGame_ImplementDefaultMouseMode();
 
 	if (openGLContext) {
 		CocoaGame_Trace("%s: shutting down OpenGL...\n", __FUNCTION__);
 
-		if ([NSOpenGLContext currentContext] == openGLContext) 
+		if ([NSOpenGLContext currentContext] == openGLContext)
 			[NSOpenGLContext clearCurrentContext];
-			
+
 		[openGLContext clearDrawable];
 		[openGLContext release];
 		openGLContext = nil;
 	}
-	
+
 	if (CocoaGame_GetVideoTraits()->acquiresDisplays) {
 		CocoaGame_Trace("%s: releasing displays...\n", __FUNCTION__);
 		CGReleaseAllDisplays();
 		CGRestorePermanentDisplayConfiguration();
 	}
-	
+
 	if (CocoaGame_GetVideoTraits()->hidesMenuBar) {
 		CocoaGame_Trace("%s: restoring menu bar...\n", __FUNCTION__);
 		[NSMenu setMenuBarVisible:YES];
 	}
-	
+
 	if (window) {
 		CocoaGame_Trace("%s: destroying window...\n", __FUNCTION__);
 		CocoaGame_DestroyWindow();
 	}
-	
+
 	videoConfig.disposition = COCOAGAME_VIDEO_NONE;
 }
 
 static CocoaGame_Bool CocoaGame_CreateWindowAndView(CocoaGame_Float width, CocoaGame_Float height, CocoaGame_UInt styleMask, CocoaGame_Bool useLionFullScreenSupport, CocoaGame_View *reuseView)
 {
 	CocoaGame_DestroyWindow();
-		
+
 	CocoaGame_Trace("%s: creating window...\n", __FUNCTION__);
 	window = [[CocoaGame_Window alloc] initWithContentRect:NSMakeRect(0, 0, width, height)
 												styleMask:styleMask
 												  backing:NSBackingStoreBuffered
 													defer:NO];
-													
+
 	if (! window) {
 		NSLog(@"%s: unable to create window.", __FUNCTION__);
 		return FALSE;
@@ -683,7 +683,7 @@ static CocoaGame_Bool CocoaGame_CreateWindowAndView(CocoaGame_Float width, Cocoa
 		[window setDelegate:delegate];
 	#endif
 	// NSCAssert([delegate retainCount] == 1, @""); // The window doesn't retain its delegate.
-	
+
 	if (! reuseView) {
 		view = [[CocoaGame_View alloc] initWithFrame:[window contentRectForFrameRect:[window frame]]];
 		if (! view) {
@@ -695,14 +695,14 @@ static CocoaGame_Bool CocoaGame_CreateWindowAndView(CocoaGame_Float width, Cocoa
 		view = [reuseView retain];
 		[view setFrame:[window contentRectForFrameRect:[window frame]]];
 	}
-		
+
 	[window setContentView:view];
 	[view release];
 
 	[window setBackgroundColor:[NSColor blackColor]];
 	[window setAcceptsMouseMovedEvents:YES];
 	[window setReleasedWhenClosed:NO];
-	
+
 	return TRUE;
 }
 
@@ -715,7 +715,7 @@ static CocoaGame_Bool CocoaGame_CreateDelegate(void)
 			return FALSE;
 		}
 	}
-	
+
 	return TRUE;
 }
 
@@ -743,7 +743,7 @@ float CocoaGame_GetStartupAspectRatio(void)
 {
 	CocoaGame_VideoMode mode;
 	CocoaGame_GetStartupVideoMode(&mode);
-	
+
 	return (float) mode.width / (float) mode.height;
 }
 
@@ -751,16 +751,16 @@ CocoaGame_Bool CocoaGame_InitVideo(const CocoaGame_VideoConfig *config)
 {
 	NSCAssert(isInitialised, @"");
 	NSCAssert((int) config->disposition > COCOAGAME_VIDEO_NONE && (int) config->disposition < (int) COCOAGAME_VIDEO__MAX_DISPOSITION, @"Invalid video disposition.");
-	
+
 	if (videoConfig.disposition != COCOAGAME_VIDEO_NONE) {
 		// This may or may not fade the screen.
 		CocoaGame_ShutdownVideo();
 	}
-	
+
 	// This is particularly important when using the Lion fullscreen support. If you need to disable it for some
 	// reason, disable it only if config->useLionFullScreenSupport is FALSE.
 	[NSApp activateIgnoringOtherApps:YES];
-	
+
 	videoConfig = *config;
 
 	// Remember these values for CocoaGame_ToggleFullScreenWindow().
@@ -768,14 +768,14 @@ CocoaGame_Bool CocoaGame_InitVideo(const CocoaGame_VideoConfig *config)
 	windowHeight = config->mode.height;
 
 	// The InitVideo function must set these.
-	videoConfig.disposition = COCOAGAME_VIDEO_NONE; 
+	videoConfig.disposition = COCOAGAME_VIDEO_NONE;
 	videoConfig.mode.width = 0;
 	videoConfig.mode.height = 0;
 	videoConfig.mode.bits = 0;
 	videoConfig.captureDisplay = FALSE;
-	
+
 	CocoaGame_Bool result;
-	
+
 	if (videoTraits[config->disposition].shouldFade)
 		CocoaGame_FadeToBlack();
 
@@ -783,31 +783,31 @@ CocoaGame_Bool CocoaGame_InitVideo(const CocoaGame_VideoConfig *config)
 		case COCOAGAME_VIDEO_FULLSCREEN:
 			result = CocoaGame_InitVideoFullScreenSetMode(config, FALSE);
 			break;
-			
+
 		case COCOAGAME_VIDEO_FULLSCREEN_SET_MODE:
 			result = CocoaGame_InitVideoFullScreenSetMode(config, TRUE);
 			break;
-			
+
 		case COCOAGAME_VIDEO_FULLSCREEN_WINDOW:
 			result = CocoaGame_InitVideoFullScreenWindow(config, nil);
 			break;
-			
+
 		case COCOAGAME_VIDEO_WINDOW:
 			result = CocoaGame_InitVideoWindow(config, nil);
 			break;
-			
+
 		default:
 			result = FALSE;
 			break;
 	}
-	
-	if ([NSApp isActive]) 
+
+	if ([NSApp isActive])
 		CocoaGame_ImplementAppMouseMode();
 
 	CocoaGame_UpdateMousePositionOutsideOfEventStream();
-	
+
 	CocoaGame_FadeFromBlack();
-	
+
 	return result;
 }
 
@@ -856,7 +856,7 @@ static CocoaGame_Bool CocoaGame_InitVideoFullScreenSetMode(const CocoaGame_Video
 		videoConfig.captureDisplay = FALSE;
 		return FALSE;
 	}
-	
+
 	if (setMode) {
 		// Find the matching video mode
 		CocoaGame_Trace("%s: finding best match for mode %dx%dx%d...\n", __FUNCTION__, config->mode.width, config->mode.height, config->mode.bits);
@@ -867,10 +867,10 @@ static CocoaGame_Bool CocoaGame_InitVideoFullScreenSetMode(const CocoaGame_Video
 			CGReleaseAllDisplays();
 			return FALSE;
 		}
-	
+
 		CocoaGame_VideoMode mode;
 		CocoaGame_GetVideoModeFromDictionary(bestMode, &mode);
-	
+
 		CocoaGame_Trace("%s: setting mode %dx%dx%d...\n", __FUNCTION__, mode.width, mode.height, mode.bits);
 		if (CGDisplaySwitchToMode(whichDisplay, (CFDictionaryRef) bestMode) != CGDisplayNoErr) {
 			NSLog(@"%s: unable to set video mode %dx%dx%d.\n", __FUNCTION__, mode.width, mode.height, mode.bits);
@@ -878,13 +878,13 @@ static CocoaGame_Bool CocoaGame_InitVideoFullScreenSetMode(const CocoaGame_Video
 			return FALSE;
 		}
 	}
-	
+
 	CocoaGame_GetVideoModeFromDictionary((NSDictionary *) CGDisplayCurrentMode(whichDisplay), &videoConfig.mode);
 
 	// We don't render to the window, but it's useful for other things (e.g., setting the cursor)
 	if (! CocoaGame_CreateFullScreenWindow(CGShieldingWindowLevel(), FALSE, nil))
 		return FALSE;
-		
+
 	int actualWindowWidth, actualWindowHeight;
 	CocoaGame_ReadViewDimensions(&actualWindowWidth, &actualWindowHeight);
 	NSCAssert(actualWindowWidth == videoConfig.mode.width && actualWindowHeight == videoConfig.mode.height,
@@ -901,14 +901,14 @@ static CocoaGame_Bool CocoaGame_CreateFullScreenWindow(CocoaGame_Int level, Coco
 	// Set the size of the window using the display bounds returned by CGDisplayBounds (which we have to convert
 	// in to Cocoa's coordinate system). i.e., this code works even if the mode hasn't been changed.
 	CGRect auxScreenRect = CocoaGame_GetDisplayBoundsInNSWindowCoordinateSpace();
-	
+
 	// Create a window.
 	if (! CocoaGame_CreateWindowAndView(auxScreenRect.size.width, auxScreenRect.size.height, NSBorderlessWindowMask, FALSE, reuseView))
 		return FALSE;
 
 	// Necessary if we're launched from the Console, or after a Mac security warning box.
 	[NSApp activateIgnoringOtherApps:YES];
-		
+
 	// [window setContentSize:NSMakeSize(auxScreenRect.size.width, auxScreenRect.size.height)];
 	[window setFrameOrigin:NSMakePoint(auxScreenRect.origin.x, auxScreenRect.origin.y)];
 	[window setLevel:level];
@@ -916,34 +916,34 @@ static CocoaGame_Bool CocoaGame_CreateFullScreenWindow(CocoaGame_Int level, Coco
 	[window setHidesOnDeactivate:hidesOnDeactivate ? YES : NO];
 
 	[NSMenu setMenuBarVisible:NO];
-	
+
 	return TRUE;
 }
 
 void CocoaGame_ToggleFullScreenWindow(void)
 {
 	NSCAssert(isInitialised, @"");
-	NSCAssert(videoConfig.disposition == COCOAGAME_VIDEO_FULLSCREEN_WINDOW || videoConfig.disposition == COCOAGAME_VIDEO_WINDOW, 
+	NSCAssert(videoConfig.disposition == COCOAGAME_VIDEO_FULLSCREEN_WINDOW || videoConfig.disposition == COCOAGAME_VIDEO_WINDOW,
 		@"CocoaGame_ToggleFullScreenWindow only available in window or full-screen-window video setup.");
-		
+
 	if (videoConfig.useLionFullScreenSupport && [window respondsToSelector:@selector(toggleFullScreen:)]) {
 		[window toggleFullScreen:nil];
 		return;
 	}
-	
+
 	CocoaGame_ImplementDefaultMouseMode();
-	
+
 	CocoaGame_View *reuseView = view;
 	[reuseView retain];
-	
+
 	[window setContentView:nil];
 	view = nil;
 
 	CocoaGame_Trace("%s: destroying window...\n", __FUNCTION__);
 	CocoaGame_DestroyWindow();
-	
+
 	CocoaGame_Bool result;
-	
+
 	if (videoConfig.disposition == COCOAGAME_VIDEO_FULLSCREEN_WINDOW) {
 		// Go windowed
 		CocoaGame_VideoConfig newConfig = videoConfig;
@@ -959,21 +959,21 @@ void CocoaGame_ToggleFullScreenWindow(void)
 		result = CocoaGame_InitVideoFullScreenWindow(&newConfig, reuseView);
 		// The menu bar will have been hidden by CocoaGame_InitVideoFullScreenWindow.
 	}
-	
+
 	NSCAssert(result, @"Failed to toggle full-screen/window.");
-	
+
 	[reuseView release];
 
 	CocoaGame_ImplementAppMouseMode();
-	
+
 	CocoaGame_UpdateMousePositionOutsideOfEventStream();
-	
+
 	CocoaGame_FadeFromBlack();
 }
 
 void CocoaGame_GetWindowDimensions(int *width, int *height)
 {
-	NSCAssert(videoConfig.disposition == COCOAGAME_VIDEO_FULLSCREEN_WINDOW || videoConfig.disposition == COCOAGAME_VIDEO_WINDOW, 
+	NSCAssert(videoConfig.disposition == COCOAGAME_VIDEO_FULLSCREEN_WINDOW || videoConfig.disposition == COCOAGAME_VIDEO_WINDOW,
 		@"CocoaGame_GetWindowDimensions only available in window or full-screen-window video setup.");
 
 	*width = windowWidth;
@@ -990,28 +990,28 @@ static CGRect CocoaGame_GetDisplayBoundsInNSWindowCoordinateSpace(void)
 {
 	CGRect auxScreenRect = CGDisplayBounds(whichDisplay);
 	CGRect mainScreenRect = CGDisplayBounds(CGMainDisplayID());
-	
+
 	auxScreenRect.origin.y = -(auxScreenRect.origin.y + auxScreenRect.size.height - mainScreenRect.size.height);
-	
+
 	return auxScreenRect;
 }
 
 static CocoaGame_Bool CocoaGame_InitVideoWindow(const CocoaGame_VideoConfig *config, CocoaGame_View *reuseView)
 {
 	CocoaGame_UInt styleMask = NSTitledWindowMask | NSMiniaturizableWindowMask | NSClosableWindowMask;
-	
+
 	if (config->enableWindowResizing)
 		styleMask |= NSResizableWindowMask;
-		
+
 	if (! CocoaGame_CreateWindowAndView(config->mode.width, config->mode.height, styleMask, config->useLionFullScreenSupport, reuseView))
 		return FALSE;
 
 	if (config->title)
 		[window setTitle:[NSString stringWithUTF8String:config->title]];
-		
+
 	[window center];
 	[window makeKeyAndOrderFront:nil];
-	
+
 	videoConfig.disposition = COCOAGAME_VIDEO_WINDOW;
 	CocoaGame_GetVideoModeFromDictionary((NSDictionary *) CGDisplayCurrentMode(whichDisplay), &videoConfig.mode);
 	CocoaGame_ReadViewDimensions(&videoConfig.mode.width, &videoConfig.mode.height);
@@ -1023,7 +1023,7 @@ static CocoaGame_Bool CocoaGame_InitVideoWindow(const CocoaGame_VideoConfig *con
 static void CocoaGame_ReadViewDimensions(int *width, int *height)
 {
 	NSRect bounds = [view bounds];
-	
+
 	*width = (int) bounds.size.width;
 	*height = (int) bounds.size.height;
 }
@@ -1034,16 +1034,16 @@ static CocoaGame_Bool CocoaGame_InitVideoFullScreenWindow(const CocoaGame_VideoC
 		// Use Lion's fullscreen support.
 		if (! CocoaGame_InitVideoWindow(config, reuseView))
 			return FALSE;
-			
+
 		windowIsTogglingFullScreen = TRUE;
 
 		// This is the secret to ensuring the game goes fullscreen with a nice animation, but for some reason
 		// it only works when the game is launched from the Dock. I think it's something to do with how the
 		// application gets activated.
 		CocoaGame_Poll();
-		
+
 		[window toggleFullScreen:window];
-	
+
 		// If you want to wait for the fullscreen toggle animation to run before continuing game startup, uncomment.
 		while (windowIsTogglingFullScreen)
 			CocoaGame_Poll();
@@ -1052,7 +1052,7 @@ static CocoaGame_Bool CocoaGame_InitVideoFullScreenWindow(const CocoaGame_VideoC
 
 		return TRUE;
 	}
-	
+
 	if (! CocoaGame_CreateFullScreenWindow(CocoaGame_WindowLevelToNSWindowLevel(config->fullScreenWindowLevel), TRUE, reuseView))
 		return FALSE;
 
@@ -1069,13 +1069,13 @@ static CocoaGame_Int CocoaGame_WindowLevelToNSWindowLevel(CocoaGame_WindowLevel 
 	switch (level) {
 		default:
 			NSCAssert(0, @"Invalid CocoaGame_WindowLevel");
-			
+
 		case COCOAGAME_WINDOWLEVEL_DEFAULT:
 			return NSNormalWindowLevel;
-			
+
 		case COCOAGAME_WINDOWLEVEL_PANEL:
 			return NSFloatingWindowLevel;
-			
+
 		case COCOAGAME_WINDOWLEVEL_VERY_HIGH:
 			return NSScreenSaverWindowLevel;
 	}
@@ -1083,21 +1083,21 @@ static CocoaGame_Int CocoaGame_WindowLevelToNSWindowLevel(CocoaGame_WindowLevel 
 
 CocoaGame_Bool CocoaGame_InitGL(const CocoaGame_GLConfig *config)
 {
-	NSCAssert(isInitialised && videoConfig.disposition != COCOAGAME_VIDEO_NONE, 
+	NSCAssert(isInitialised && videoConfig.disposition != COCOAGAME_VIDEO_NONE,
 		@"Attempt to initialise GL without initialising video first.");
-	
+
 	CocoaGame_Trace("%s: initialising OpenGL...\n", __FUNCTION__);
 	openGLContext = CocoaGame_CreateOpenGLContext(config, &glConfig);
 	if (! openGLContext)
 		return FALSE;
-		
+
 	if (! CocoaGame_UpdateOpenGLContext()) {
 		openGLContext = nil;
 		return FALSE;
 	}
-	
-	[openGLContext retain];		   
-	
+
+	[openGLContext retain];
+
 	openGLUpdateRequired = FALSE;
 
 	[openGLContext makeCurrentContext];
@@ -1106,7 +1106,7 @@ CocoaGame_Bool CocoaGame_InitGL(const CocoaGame_GLConfig *config)
 	glDisable(GL_SCISSOR_TEST);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-	
+
 	[openGLContext flushBuffer];
 
 	CocoaGame_Trace("%s: OpenGL initialised.\n", __FUNCTION__);
@@ -1153,19 +1153,19 @@ static NSOpenGLContext *CocoaGame_CreateOpenGLContext(const CocoaGame_GLConfig *
 
 		// Terminate the attributes.
 		attribs[attribCount++] = (NSOpenGLPixelFormatAttribute) 0;
-		
+
 		NSCAssert(attribCount <= countof(attribs), @"Overflowed attribs buffer");
 
 		NSOpenGLPixelFormat *pixelFormat = [[[NSOpenGLPixelFormat alloc] initWithAttributes:attribs] autorelease];
 
-		if (! pixelFormat) 
+		if (! pixelFormat)
 			continue;
 
 		NSOpenGLContext *context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
-		
-		if (! context) 
+
+		if (! context)
 			continue;
-		
+
 		GLint swapInterval = config->swapInterval;
 		[context setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
 
@@ -1198,14 +1198,14 @@ static CocoaGame_Bool CocoaGame_ReadGLConfig(NSOpenGLContext *context, NSOpenGLP
 	GLint gotStencil;
 	[pixelFormat getValues:&gotStencil forAttribute:NSOpenGLPFAStencilSize forVirtualScreen:0];
 	config->stencilBits = (int) gotStencil;
-	
+
 	GLint gotSwapInterval;
 	[context getValues:&gotSwapInterval forParameter:NSOpenGLCPSwapInterval];
 	config->swapInterval = (int) gotSwapInterval;
-	
-	CocoaGame_Trace("%s: colourBits=%d alphaBits=%d depthBits=%d stencilBits=%d msaa=%d swapInterval=%d\n", 
+
+	CocoaGame_Trace("%s: colourBits=%d alphaBits=%d depthBits=%d stencilBits=%d msaa=%d swapInterval=%d\n",
 		__FUNCTION__, config->colourBits, config->alphaBits, config->depthBits, config->stencilBits, config->msaa, config->swapInterval);
-	
+
 	return TRUE;
 }
 
@@ -1219,7 +1219,7 @@ CocoaGame_Bool CocoaGame_BeginRender(void)
 	NSCAssert(isInitialised && openGLContext, @"Attempt to begin rendering when GL not initialised.");
 
 	CocoaGame_Bool shouldRender;
-	
+
 	if (CocoaGame_GetVideoTraits()->rendersToView) {
 		shouldRender = [window isVisible];
 
@@ -1228,7 +1228,7 @@ CocoaGame_Bool CocoaGame_BeginRender(void)
 		NSCAssert([openGLContext view] == view, @"openGLContext has been reassigned somehow.");
 	} else {
 		shouldRender = [NSApp isActive];
-			
+
 		CGRect bounds = CGDisplayBounds(whichDisplay);
 		if ((int) bounds.size.width != videoConfig.mode.width || (int) bounds.size.height != videoConfig.mode.height) {
 			NSLog(@"%s: video mode changed externally!\n", __FUNCTION__);
@@ -1243,7 +1243,7 @@ CocoaGame_Bool CocoaGame_BeginRender(void)
 	}
 
 	[openGLContext makeCurrentContext];
-	
+
 	discardedRender = FALSE;
 
 	return shouldRender;
@@ -1258,7 +1258,7 @@ static BOOL CocoaGame_UpdateOpenGLContext(void)
 		CocoaGame_Trace("%s: OpenGL context updated.\n", __FUNCTION__);
 	} else {
 		CocoaGame_Trace("%s: updating OpenGL context (full screen).\n", __FUNCTION__);
-		
+
 		#if 0
 			if (CGLSetFullScreen([openGLContext CGLContextObj]) != kCGLNoError)
 				return FALSE;
@@ -1281,10 +1281,10 @@ void CocoaGame_EndRender(void)
 
 	NSCAssert([NSOpenGLContext currentContext] == openGLContext, @"Did you forget to CocoaGame_SetTargetPixelBuffer(NULL)?");
 	NSCAssert(! CocoaGame_GetVideoTraits()->rendersToView || [openGLContext view] == view, @"openGLContext view reassigned somehow.");
-	
+
 	if (! discardedRender)
 		[openGLContext flushBuffer];
-	
+
 	discardedRender = TRUE;
 }
 
@@ -1292,7 +1292,7 @@ void CocoaGame_DiscardRender(void)
 {
 	discardedRender = TRUE;
 }
-	
+
 
 typedef struct CocoaGame_SidedModifierTest {
 	CocoaGame_UInt cocoaFlag;
@@ -1311,46 +1311,46 @@ static CocoaGame_SidedModifierTest SIDED_MODIFIER_TESTS[] = {
 
 static unsigned int CocoaGame_TestSidedModifiers(const CocoaGame_SidedModifierTest *test, CocoaGame_UInt cocoaModifierFlags)
 {
-	if (! (cocoaModifierFlags & test->cocoaFlag)) 
+	if (! (cocoaModifierFlags & test->cocoaFlag))
 		return 0;
-		
+
 	unsigned int flags = 0;
-		
+
 	if (cocoaModifierFlags & test->cocoaLeftDeviceFlag)
 		flags |= test->leftFlag;
-		
+
 	if (cocoaModifierFlags & test->cocoaRightDeviceFlag)
 		flags |= test->rightFlag;
-		
+
 	// If neither of the device flags are set, just assume left
 	if (! flags)
 		return test->leftFlag;
-		
+
 	return flags;
 }
 
 void CocoaGame_UpdateModifiers(unsigned long cocoaModifierFlags)
 {
 	NSCAssert(isInitialised, @"");
-	
+
 	unsigned int i;
 
-	unsigned int newModifiers = 0;	  
-	for (i = 0; i != countof(SIDED_MODIFIER_TESTS); ++i) 
+	unsigned int newModifiers = 0;
+	for (i = 0; i != countof(SIDED_MODIFIER_TESTS); ++i)
 		newModifiers |= CocoaGame_TestSidedModifiers(&SIDED_MODIFIER_TESTS[i], (CocoaGame_UInt) cocoaModifierFlags);
-		
+
 	if (cocoaModifierFlags & NSAlphaShiftKeyMask)
 		newModifiers |= COCOAGAME_MODIFIER_CAPS_LOCK;
-		
+
 	if (modifiers == newModifiers)
 		return;
-		
+
 	CocoaGame_Event ourEvent;
 	ourEvent.type = COCOAGAME_EVENT_MODIFIERS_CHANGED;
 	ourEvent.modifiers.modifiers = newModifiers;
 	ourEvent.modifiersChanged.previousModifiers = modifiers;
 	CocoaGame_QueueEvent(&ourEvent);
-		
+
 	modifiers = newModifiers;
 }
 
@@ -1364,24 +1364,24 @@ unsigned int CocoaGame_GetModifiers(void)
 void CocoaGame_Sleep(double seconds)
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
+
 	// CocoaGame_Trace("%s...\n", __FUNCTION__);
-	
-	[NSApp nextEventMatchingMask:NSAnyEventMask 
-					   untilDate:[NSDate dateWithTimeIntervalSinceNow:seconds] 
-						  inMode:NSDefaultRunLoopMode 
+
+	[NSApp nextEventMatchingMask:NSAnyEventMask
+					   untilDate:[NSDate dateWithTimeIntervalSinceNow:seconds]
+						  inMode:NSDefaultRunLoopMode
 						 dequeue:NO];
-	
+
 	[pool drain];
 }
 
 void CocoaGame_QueueEvent(const CocoaGame_Event *event)
 {
 	int nextQueueWrite = (queueWrite + 1) % COCOAGAME_MAX_QUEUED_EVENTS;
-	
+
 	if (nextQueueWrite == queueRead) {
 		NSLog(@"%s: queue full.", __FUNCTION__);
-	} else {	
+	} else {
 		queue[queueWrite] = *event;
 		queueWrite = nextQueueWrite;
 	}
@@ -1389,83 +1389,83 @@ void CocoaGame_QueueEvent(const CocoaGame_Event *event)
 
 CocoaGame_Bool CocoaGame_DequeueEvent(CocoaGame_Event *event)
 {
-	if (queueRead == queueWrite) 
+	if (queueRead == queueWrite)
 		return FALSE;
 
 	// Leaving this here as a reminder. Standard Cocoa application's don't process any input during a fullscreen
-	// toggle. I've found this to be an issue only when quitting while a window is in the process of animating 
+	// toggle. I've found this to be an issue only when quitting while a window is in the process of animating
 	// between fullscreen and a window, so I've put some code to protect from that in CocoaGame_ShutdownVideo
 	// instead. If there's some other issue then this code may need to be restored.
 	// if (windowIsTogglingFullScreen) {
 	// 	CocoaGame_Poll();
 	// 	return FALSE;
 	// }
-	
+
 	*event = queue[queueRead];
 	queueRead = (queueRead + 1) % COCOAGAME_MAX_QUEUED_EVENTS;
 	return TRUE;
-}	
+}
 
 void CocoaGame_TraceEvent(const CocoaGame_Event *event)
 {
 	switch (event->type) {
 		case COCOAGAME_EVENT_NONE:
 			break;
-			
+
 		case COCOAGAME_EVENT_APP_ACTIVATE:
 			fprintf(stderr, "App activate\n");
 			break;
-			
+
 		case COCOAGAME_EVENT_APP_DEACTIVATE:
 			fprintf(stderr, "App deactivate\n");
 			break;
-			
+
 		case COCOAGAME_EVENT_MODIFIERS_CHANGED:
-			fprintf(stderr, "Modifiers	 : modifiers now 0x%02x were 0x%02x\n", 
+			fprintf(stderr, "Modifiers	 : modifiers now 0x%02x were 0x%02x\n",
 				event->modifiers.modifiers, event->modifiersChanged.previousModifiers);
 			break;
-			
+
 		case COCOAGAME_EVENT_KEY_DOWN:
-			fprintf(stderr, "Key down	 : key 0x%04x modifiers 0x%02x keyCode 0x%02x\n", 
+			fprintf(stderr, "Key down	 : key 0x%04x modifiers 0x%02x keyCode 0x%02x\n",
 				(unsigned int) event->key.key, event->modifiers.modifiers, event->key.keyCode);
 			break;
 
 		case COCOAGAME_EVENT_KEY_UP:
-			fprintf(stderr, "Key up		 : key 0x%04x modifiers 0x%02x keyCode 0x%02x\n", 
+			fprintf(stderr, "Key up		 : key 0x%04x modifiers 0x%02x keyCode 0x%02x\n",
 				(unsigned int) event->key.key, event->modifiers.modifiers, event->key.keyCode);
 			break;
 
 		case COCOAGAME_EVENT_CHAR:
 			if (event->character.unicode >= ' ' && event->character.unicode < 127) {
-				fprintf(stderr, "Character	 : '%c' modifiers 0x%02x\n", 
+				fprintf(stderr, "Character	 : '%c' modifiers 0x%02x\n",
 					(char) event->character.unicode, event->modifiers.modifiers);
 			} else {
-				fprintf(stderr, "Character	 : UNICODE 0x%04x modifiers 0x%02x\n", 
+				fprintf(stderr, "Character	 : UNICODE 0x%04x modifiers 0x%02x\n",
 					(unsigned int) event->character.unicode, event->modifiers.modifiers);
 			}
 			break;
-			
+
 		case COCOAGAME_EVENT_MOUSE_MOVE:
-			fprintf(stderr, "Mouse move	 :			@ %4d, %4d delta % 3.4f, % 3.4f modifiers 0x%02x\n", 
-				event->mousePosition.x, event->mousePosition.y, 
+			fprintf(stderr, "Mouse move	 :			@ %4d, %4d delta % 3.4f, % 3.4f modifiers 0x%02x\n",
+				event->mousePosition.x, event->mousePosition.y,
 				event->mouseMove.deltaX, event->mouseMove.deltaY, event->modifiers.modifiers);
 			break;
 
 		case COCOAGAME_EVENT_MOUSE_DOWN:
-			fprintf(stderr, "Mouse down	 : button %d @ %4d, %4d modifiers 0x%02x\n", 
-				(int) event->mouseButton.button, event->mousePosition.x, event->mousePosition.y, 
+			fprintf(stderr, "Mouse down	 : button %d @ %4d, %4d modifiers 0x%02x\n",
+				(int) event->mouseButton.button, event->mousePosition.x, event->mousePosition.y,
 				event->modifiers.modifiers);
 			break;
-			
+
 		case COCOAGAME_EVENT_MOUSE_UP:
-			fprintf(stderr, "Mouse up	 : button %d @ %4d, %4d modifiers 0x%02x\n", 
-				(int) event->mouseButton.button, event->mousePosition.x, event->mousePosition.y, 
+			fprintf(stderr, "Mouse up	 : button %d @ %4d, %4d modifiers 0x%02x\n",
+				(int) event->mouseButton.button, event->mousePosition.x, event->mousePosition.y,
 				event->modifiers.modifiers);
 			break;
 
 		case COCOAGAME_EVENT_MOUSE_SCROLL:
-			fprintf(stderr, "Mouse scroll:			@ %4d, %4d scroll % 3.4f, % 3.4f modifiers 0x%02x\n", 
-				event->mouseScroll.cursorX, event->mouseScroll.cursorY, 
+			fprintf(stderr, "Mouse scroll:			@ %4d, %4d scroll % 3.4f, % 3.4f modifiers 0x%02x\n",
+				event->mouseScroll.cursorX, event->mouseScroll.cursorY,
 				event->mouseScroll.scrollX, event->mouseScroll.scrollY, event->modifiers.modifiers);
 			break;
 	}
@@ -1475,17 +1475,17 @@ static CocoaGame_Bool CocoaGame_PollOne(void)
 {
 	NSCAssert(isInitialised, @"");
 
-	NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask 
+	NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask
 										untilDate:nil // i.e., return immediately/don't wait for an event
 										   inMode:NSDefaultRunLoopMode
 										  dequeue:YES];
-	
+
 	if (! event)
 		return FALSE;
-										  
+
 	if (! CocoaGame_ProcessEvent(event))
 		[NSApp sendEvent:event];
-		
+
 	return TRUE;
 }
 
@@ -1498,14 +1498,14 @@ void CocoaGame_Poll(void)
 CocoaGame_Bool CocoaGame_ProcessEvent(void *voidEvent)
 {
 	NSEvent *event = (NSEvent *) voidEvent;
-	
+
 	CocoaGame_UpdateModifiers([event modifierFlags]);
-	
+
 	CocoaGame_Bool consumed = FALSE;
-		
+
 	switch ([event type]) {
 		// handle an NSSystemDefined event with subtype 7, and you can get 32-button-mouse support!
-		
+
 		case NSLeftMouseDown:
 		case NSRightMouseDown:
 		case NSOtherMouseDown: {
@@ -1528,7 +1528,7 @@ CocoaGame_Bool CocoaGame_ProcessEvent(void *voidEvent)
 		case NSOtherMouseUp:
 			if (CocoaGame_UpdateMousePosition(event))
 				CocoaGame_QueueMouseMoveEvent(event);
-			
+
 			if ([event window] == window || CocoaGame_GetVideoTraits()->acquiresDisplays) {
 				CocoaGame_Event ourEvent;
 				CocoaGame_NSEventToMouseButtonEvent(event, &ourEvent.mouseButton);
@@ -1536,7 +1536,7 @@ CocoaGame_Bool CocoaGame_ProcessEvent(void *voidEvent)
 				CocoaGame_QueueEvent(&ourEvent);
 			}
 			break;
-			
+
 		case NSLeftMouseDragged:
 		case NSRightMouseDragged:
 		case NSOtherMouseDragged:
@@ -1544,7 +1544,7 @@ CocoaGame_Bool CocoaGame_ProcessEvent(void *voidEvent)
 			if (CocoaGame_UpdateMousePosition(event))
 				CocoaGame_QueueMouseMoveEvent(event);
 			break;
-			
+
 		case NSScrollWheel:
 			// Don't queue a COCOAGAME_EVENT_MOUSE_MOVE since the deltaX and deltaY properties of the event
 			// are hijacked for NSScrollWheel to contain scroll deltas.
@@ -1563,24 +1563,24 @@ CocoaGame_Bool CocoaGame_ProcessEvent(void *voidEvent)
 				CocoaGame_QueueEvent(&ourEvent);
 			}
 			break;
-			
+
 		case NSKeyUp:
-			if ([event window] == window || CocoaGame_GetVideoTraits()->acquiresDisplays) 
+			if ([event window] == window || CocoaGame_GetVideoTraits()->acquiresDisplays)
 				CocoaGame_QueueKeyAndCharacterEvents(event);
 			break;
-			
+
 		case NSKeyDown:
 			if ([event window] == window || CocoaGame_GetVideoTraits()->acquiresDisplays) {
 				consumed = TRUE;
-				
+
 				if (! CocoaGame_CheckForSpecialKeys(event)) {
 					 if (wantKeyRepeats || ! [event isARepeat]) {
 						CocoaGame_QueueKeyAndCharacterEvents(event);
-					}					 
+					}
 				}
 			}
 			break;
-			
+
 		default:
 			break;
 	}
@@ -1591,24 +1591,24 @@ CocoaGame_Bool CocoaGame_ProcessEvent(void *voidEvent)
 static BOOL CocoaGame_UpdateMousePosition(NSEvent *event)
 {
 	// We want the mouse position at the time of the event, in our window coordinates.
-	
+
 	NSPoint mousePositionWas = mousePosition;
 
 	NSPoint positionInWindow;
-	
+
 	if ([event window] == window)
 		positionInWindow = [event locationInWindow];
 	else {
 		NSPoint positionInScreen;
-	
-		if ([event window]) 
+
+		if ([event window])
 			positionInScreen = [[event window] convertBaseToScreen:[event locationInWindow]];
-		else 
+		else
 			positionInScreen = [event locationInWindow];
 
 		positionInWindow = [window convertScreenToBase:positionInScreen];
 	}
-	
+
 	if (view && CocoaGame_GetVideoTraits()->rendersToView) {
 		NSRect viewBounds = [view bounds];
 		mousePosition = [view convertPoint:positionInWindow fromView:nil];
@@ -1619,7 +1619,7 @@ static BOOL CocoaGame_UpdateMousePosition(NSEvent *event)
 	}
 
 	CocoaGame_Bool positionChanged = (int) mousePosition.x != (int) mousePositionWas.x || (int) mousePosition.y != (int) mousePositionWas.y;
-	
+
 	return positionChanged || CocoaGame_MouseMoveHasDelta(event);
 }
 
@@ -1645,7 +1645,7 @@ static void CocoaGame_SetupMousePositionEvent(CocoaGame_MousePositionEvent *mous
 {
 	CocoaGame_SetupModifiersEvent(&mousePositionEvent->base);
 	mousePositionEvent->x = (int) mousePosition.x;
-	mousePositionEvent->y = (int) mousePosition.y;				  
+	mousePositionEvent->y = (int) mousePosition.y;
 }
 
 static void CocoaGame_SetupMouseMoveEvent(NSEvent *event, CocoaGame_MouseMoveEvent *mouseMove)
@@ -1685,7 +1685,7 @@ static void CocoaGame_QueueKeyEvent(NSEvent *event)
 		// Normalise to upper case
 		if (ourEvent.key.key >= 'a' && ourEvent.key.key <= 'z')
 			ourEvent.key.key += 'A' - 'a';
-			
+
 		CocoaGame_QueueEvent(&ourEvent);
 	}
 }
@@ -1717,14 +1717,14 @@ static CocoaGame_Bool CocoaGame_IsFunctionKey(unsigned long unicode)
 
 static void CocoaGame_UpdateMousePositionOutsideOfEventStream(void)
 {
-	if (window) 
+	if (window)
 		mousePosition = [window mouseLocationOutsideOfEventStream];
 }
 
 static CocoaGame_Bool CocoaGame_CheckForSpecialKeys(NSEvent *event)
 {
 	NSString *characters = [event charactersIgnoringModifiers];
-	
+
 	(void) characters;
 
 	if (enableAltEsc) {
@@ -1734,10 +1734,10 @@ static CocoaGame_Bool CocoaGame_CheckForSpecialKeys(NSEvent *event)
 			return TRUE;
 		}
 	}
-	
+
 	// if ([characters length] && [characters characterAtIndex:0] == '\t' && (CocoaGame_GetModifiers() & COCOAGAME_MODIFIER_BOTH_COMMANDS))
 	//	   CocoaGame_Trace("Command+Tab!");
-	
+
 	return FALSE;
 }
 
@@ -1772,12 +1772,12 @@ void CocoaGame_SetKeyRepeat(CocoaGame_Bool keyRepeatEnabled)
 void CocoaGame_SetMouseDeltaMode(CocoaGame_Bool deltaMode)
 {
 	wantMouseDeltaMode = deltaMode;
-	
+
 	if (CocoaGame_AppOwnsMouse())
 		CocoaGame_InternalSetMouseDeltaMode(deltaMode);
 }
 
-static void CocoaGame_InternalSetMouseDeltaMode(CocoaGame_Bool deltaMode)	 
+static void CocoaGame_InternalSetMouseDeltaMode(CocoaGame_Bool deltaMode)
 {
 	if (deltaMode) {
 		CGAssociateMouseAndMouseCursorPosition(0);
@@ -1796,12 +1796,12 @@ CocoaGame_Bool CocoaGame_IsMouseInDeltaMode(void)
 void CocoaGame_SetMouseCursorVisible(CocoaGame_Bool cursorVisible)
 {
 	wantMouseCursorVisible = cursorVisible;
-	
+
 	if (CocoaGame_AppOwnsMouse())
 		CocoaGame_InternalSetMouseCursorVisible(cursorVisible);
 }
 
-static void CocoaGame_InternalSetMouseCursorVisible(CocoaGame_Bool cursorVisible)	 
+static void CocoaGame_InternalSetMouseCursorVisible(CocoaGame_Bool cursorVisible)
 {
 	// This hack is needed to simultaneously support 10.4 and Lion
 	BOOL isLionFullScreenWindow = videoConfig.disposition == COCOAGAME_VIDEO_FULLSCREEN_WINDOW && videoConfig.useLionFullScreenSupport && [window respondsToSelector:@selector(toggleFullScreen:)];
@@ -1838,11 +1838,11 @@ CocoaGame_Bool CocoaGame_AppOwnsMouse(void)
 {
 	if (! [NSApp isActive] || videoConfig.disposition == COCOAGAME_VIDEO_NONE)
 		return NO;
-		
+
 	// If rendering to a view, then mouse cursor visibility is handled for us by the cursor rects.
-	if (! CocoaGame_GetVideoTraits()->rendersToView) 
+	if (! CocoaGame_GetVideoTraits()->rendersToView)
 		return YES;
-	
+
 	return [NSApp keyWindow] == window;
 }
 
@@ -1860,15 +1860,15 @@ static void CocoaGame_WarpMouseCursorToCentreOfView(void)
 void CocoaGame_SetMousePosition(int x, int y)
 {
 	// I don't trust NSScreen when combined with CGDisplaySwitchToMode...
-	
+
 	NSRect frame = [window contentRectForFrameRect:[window frame]];
-	
+
 	CGRect mainScreenRect = CGDisplayBounds(CGMainDisplayID());
-	
+
 	CGPoint point;
 	point.x = frame.origin.x + x;
 	point.y = frame.origin.y + y;
-	
+
 	point.y = mainScreenRect.size.height - point.y;
 
 	CGWarpMouseCursorPosition(point);
@@ -1896,42 +1896,42 @@ CocoaGame_PixelBuffer *CocoaGame_CreatePixelBuffer(GLenum textureTarget, GLint i
 	CocoaGame_PixelBuffer *pb;
 	NSOpenGLPixelFormat *pixelFormat;
 	NSAutoreleasePool *pool;
-	
+
 	NSCAssert(openGLContext, @"Must initialise GL before creating a pixel buffer.");
-	
+
 	pool = [[NSAutoreleasePool alloc] init];
-	
+
 	pixelFormat = CocoaGame_CreatePixelFormatForPixelBuffer(config);
 	if (! pixelFormat) {
 		[pool drain];
 		return NULL;
 	}
-	
-	pb = calloc(1, sizeof(pb));
-	
-	pb->pixelBuffer = [[NSOpenGLPixelBuffer alloc] initWithTextureTarget:textureTarget 
-												   textureInternalFormat:internalFormat 
-												   textureMaxMipMapLevel:0 
-															  pixelsWide:width 
+
+	pb = calloc(1, sizeof(*pb));
+
+	pb->pixelBuffer = [[NSOpenGLPixelBuffer alloc] initWithTextureTarget:textureTarget
+												   textureInternalFormat:internalFormat
+												   textureMaxMipMapLevel:0
+															  pixelsWide:width
 															  pixelsHigh:height];
-															
+
 	if (! pb->pixelBuffer) {
 		free(pb);
 		[pool drain];
 		return NULL;
 	}
-	
+
 	pb->context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:openGLContext];
-	
+
 	if (! pb->context) {
 		[pb->pixelBuffer release];
 		free(pb);
 		[pool drain];
 		return NULL;
 	}
-	
+
 	// [pb->context setPixelBuffer:pb->pixelBuffer cubeMapFace:0 mipMapLevel:0 currentVirtualScreen:[openGLContext currentVirtualScreen]];
-	
+
 	[pool drain];
 	return pb;
 }
@@ -1974,7 +1974,7 @@ static NSOpenGLPixelFormat *CocoaGame_CreatePixelFormatForPixelBuffer(const Coco
 
 	// Terminate the attributes.
 	attribs[attribCount++] = (NSOpenGLPixelFormatAttribute) 0;
-	
+
 	NSCAssert(attribCount <= countof(attribs), @"Overflowed attribs array,");
 
 	return [[[NSOpenGLPixelFormat alloc] initWithAttributes:attribs] autorelease];
@@ -1985,29 +1985,29 @@ void CocoaGame_SetTargetPixelBuffer(CocoaGame_PixelBuffer *pbuffer)
 	if (pbuffer) {
 		[pbuffer->context setPixelBuffer:pbuffer->pixelBuffer cubeMapFace:0 mipMapLevel:0 currentVirtualScreen:[openGLContext currentVirtualScreen]];
 		[pbuffer->context makeCurrentContext];
-	} else 
+	} else
 		[openGLContext makeCurrentContext];
 }
 
 void CocoaGame_SetTextureImageToPixelBuffer(CocoaGame_PixelBuffer *targetPbuffer, CocoaGame_PixelBuffer *pbuffer, GLenum colourBuffer)
 {
 	NSOpenGLContext *targetContext = targetPbuffer ? targetPbuffer->context : openGLContext;
-	
+
 	[targetContext setTextureImageToPixelBuffer:pbuffer->pixelBuffer colorBuffer:colourBuffer];
 }
 
 void CocoaGame_DestroyPixelBuffer(CocoaGame_PixelBuffer *pbuffer)
 {
-	if ([NSOpenGLContext currentContext] == pbuffer->context) 
+	if ([NSOpenGLContext currentContext] == pbuffer->context)
 		[NSOpenGLContext clearCurrentContext];
-		
+
 	[pbuffer->context clearDrawable];
 	[pbuffer->context release];
 
 	[pbuffer->pixelBuffer release];
-	
+
 	free(pbuffer);
-	
+
 	[openGLContext makeCurrentContext];
 }
 
@@ -2053,22 +2053,22 @@ uint32_t CocoaGame_GetMillisecondTimer(void)
 
 @implementation CocoaGame_Window
 
-- (id)initWithContentRect:(NSRect)contentRect styleMask:(CocoaGame_UInt)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation 
+- (id)initWithContentRect:(NSRect)contentRect styleMask:(CocoaGame_UInt)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation
 {
 	if (self = [super initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation], self) {
 	}
-	
+
 	CocoaGame_Trace("%s\n", __FUNCTION__);
 	return self;
 }
 
-- (void)dealloc 
+- (void)dealloc
 {
 	CocoaGame_Trace("%s\n", __FUNCTION__);
 	[super dealloc];
 }
 
-- (BOOL)canBecomeKeyWindow 
+- (BOOL)canBecomeKeyWindow
 {
 	return YES;
 }
@@ -2081,62 +2081,62 @@ uint32_t CocoaGame_GetMillisecondTimer(void)
 
 @implementation CocoaGame_Delegate
 
-- (id)init 
+- (id)init
 {
 	CocoaGame_Trace("%s\n", __FUNCTION__);
 
 	if (self = [super init], self) {
-		[[NSNotificationCenter defaultCenter] addObserver:self 
+		[[NSNotificationCenter defaultCenter] addObserver:self
 												selector:@selector(applicationDidBecomeActive:)
 													name:NSApplicationDidBecomeActiveNotification
 												  object:nil];
 
-		[[NSNotificationCenter defaultCenter] addObserver:self 
+		[[NSNotificationCenter defaultCenter] addObserver:self
 												selector:@selector(applicationWillResignActive:)
 													name:NSApplicationWillResignActiveNotification
 												  object:nil];
 
-		[[NSNotificationCenter defaultCenter] addObserver:self 
+		[[NSNotificationCenter defaultCenter] addObserver:self
 												selector:@selector(applicationDidResignActive:)
 													name:NSApplicationDidResignActiveNotification
 												  object:nil];
 
-		[[NSNotificationCenter defaultCenter] addObserver:self 
+		[[NSNotificationCenter defaultCenter] addObserver:self
 												selector:@selector(applicationDidChangeScreenParameters:)
 													name:NSApplicationDidChangeScreenParametersNotification
 												  object:nil];
 	}
-	
+
 	return self;
 }
 
-- (void)dealloc 
+- (void)dealloc
 {
 	CocoaGame_Trace("%s\n", __FUNCTION__);
 
-	[[NSNotificationCenter defaultCenter] removeObserver:self 
+	[[NSNotificationCenter defaultCenter] removeObserver:self
 													name:NSApplicationDidBecomeActiveNotification
 												  object:nil];
 
-	[[NSNotificationCenter defaultCenter] removeObserver:self 
+	[[NSNotificationCenter defaultCenter] removeObserver:self
 													name:NSApplicationWillResignActiveNotification
 												  object:nil];
 
-	[[NSNotificationCenter defaultCenter] removeObserver:self 
+	[[NSNotificationCenter defaultCenter] removeObserver:self
 													name:NSApplicationDidResignActiveNotification
 												  object:nil];
 
-	[[NSNotificationCenter defaultCenter] removeObserver:self 
+	[[NSNotificationCenter defaultCenter] removeObserver:self
 													name:NSApplicationDidChangeScreenParametersNotification
 												  object:nil];
 
 	[super dealloc];
 }
 
-- (BOOL)windowShouldClose:(id)sender 
+- (BOOL)windowShouldClose:(id)sender
 {
 	(void) sender;
-	
+
 	shouldQuit = TRUE;
 	return NO;
 }
@@ -2147,14 +2147,14 @@ uint32_t CocoaGame_GetMillisecondTimer(void)
 	// CocoaGame_Trace("app did activate\n");
 
 	[window makeKeyAndOrderFront:self];
-		
-	if (CocoaGame_AppOwnsMouse()) 
+
+	if (CocoaGame_AppOwnsMouse())
 		CocoaGame_ImplementAppMouseMode();
-		
+
 	CocoaGame_Event ourEvent;
 	ourEvent.type = COCOAGAME_EVENT_APP_ACTIVATE;
 	CocoaGame_QueueEvent(&ourEvent);
-	
+
 	openGLUpdateRequired = TRUE;
 }
 
@@ -2172,7 +2172,7 @@ uint32_t CocoaGame_GetMillisecondTimer(void)
 {
 	(void) aNotification;
 	// CocoaGame_Trace("app did deactivate\n");
-	
+
 	CocoaGame_ImplementDefaultMouseMode();
 }
 
@@ -2217,7 +2217,7 @@ uint32_t CocoaGame_GetMillisecondTimer(void)
 - (void)windowWillExitFullScreen:(NSNotification *)notification
 {
 	(void) notification;
-	
+
 	windowIsTogglingFullScreen = TRUE;
 }
 
@@ -2236,34 +2236,34 @@ uint32_t CocoaGame_GetMillisecondTimer(void)
 
 @implementation CocoaGame_View
 
-- (id)initWithFrame:(NSRect)frame 
+- (id)initWithFrame:(NSRect)frame
 {
 	CocoaGame_Trace("%s\n", __FUNCTION__);
-	
+
 	if (self = [super initWithFrame:frame], self) {
-		[[NSNotificationCenter defaultCenter] addObserver:self 
-												 selector:@selector(globalFrameDidChange:) 
+		[[NSNotificationCenter defaultCenter] addObserver:self
+												 selector:@selector(globalFrameDidChange:)
 													 name:NSViewGlobalFrameDidChangeNotification
-												   object:self];		
+												   object:self];
 	}
-	
+
 	return self;
 }
 
-- (void)dealloc 
+- (void)dealloc
 {
 	CocoaGame_Trace("%s\n", __FUNCTION__);
-	
+
 	[invisibleCursor release];
-	
-	[[NSNotificationCenter defaultCenter] removeObserver:self 
+
+	[[NSNotificationCenter defaultCenter] removeObserver:self
 													name:NSViewGlobalFrameDidChangeNotification
 												  object:self];
-								 
+
 	[super dealloc];
 }
 
-- (void)drawRect:(NSRect)rect 
+- (void)drawRect:(NSRect)rect
 {
 	// Use the callback if we can.
 	if (openGLContext && drawCallback) {
@@ -2278,12 +2278,12 @@ uint32_t CocoaGame_GetMillisecondTimer(void)
 	NSRectFill(rect);
 }
 
-- (void)globalFrameDidChange:(NSNotification *)aNotification 
+- (void)globalFrameDidChange:(NSNotification *)aNotification
 {
 	(void) aNotification;
 
 	openGLUpdateRequired = TRUE;
-	
+
 	if (videoConfig.disposition == COCOAGAME_VIDEO_WINDOW && ! [[self window] cocoaGame_IsFullScreen]) {
 		windowWidth = [self bounds].size.width;
 		windowHeight = [self bounds].size.height;
@@ -2314,15 +2314,15 @@ uint32_t CocoaGame_GetMillisecondTimer(void)
 		invisibleCursor = [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(0, 0)];
 		[image release];
 	}
-	
+
 	if (viewCursorHidden)
 		[self addCursorRect:[self bounds] cursor:invisibleCursor];
 	else {
-		// Although not adding a cursor rect gives you the arrow cursor, if you don't add a cursor rect then 
+		// Although not adding a cursor rect gives you the arrow cursor, if you don't add a cursor rect then
 		// -[NSWindow invalidateCursorRectsForView:] ignores you.
 		[self addCursorRect:[self bounds] cursor:[NSCursor arrowCursor]];
 	}
-}	 
+}
 
 @end
 
