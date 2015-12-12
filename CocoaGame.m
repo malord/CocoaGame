@@ -156,7 +156,9 @@ static CocoaGame_Bool CocoaGame_IsFunctionKey(unsigned long unicode);
 // Returns TRUE if the key should not be passed to the application.
 static CocoaGame_Bool CocoaGame_CheckForSpecialKeys(NSEvent *event);
 
+#ifdef COCOAGAME_ENABLE_PBUFFERS
 static NSOpenGLPixelFormat *CocoaGame_CreatePixelFormatForPixelBuffer(const CocoaGame_GLConfig *config);
+#endif
 
 //
 // Private data
@@ -1886,6 +1888,12 @@ static void CocoaGame_ImplementAppMouseMode(void)
 	CocoaGame_InternalSetMouseCursorVisible(wantMouseCursorVisible);
 }
 
+#ifdef COCOAGAME_ENABLE_PBUFFERS
+
+//
+// Pixel buffers
+//
+
 struct CocoaGame_PixelBuffer {
 	NSOpenGLPixelBuffer *pixelBuffer;
 	NSOpenGLContext *context;
@@ -2010,6 +2018,8 @@ void CocoaGame_DestroyPixelBuffer(CocoaGame_PixelBuffer *pbuffer)
 	
 	[openGLContext makeCurrentContext];
 }
+
+#endif // COCOAGAME_ENABLE_PBUFFERS
 
 //
 // Timers

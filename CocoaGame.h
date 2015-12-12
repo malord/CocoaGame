@@ -297,6 +297,8 @@ void CocoaGame_DiscardRender(void);
 //
 // OpenGL pbuffer support
 //
+	
+#ifdef COCOAGAME_ENABLE_PBUFFERS
 
 typedef struct CocoaGame_PixelBuffer CocoaGame_PixelBuffer;
 
@@ -316,6 +318,8 @@ void CocoaGame_SetTextureImageToPixelBuffer(CocoaGame_PixelBuffer *targetPbuffer
 
 /// Destroy a pixel buffer.
 void CocoaGame_DestroyPixelBuffer(CocoaGame_PixelBuffer *pbuffer);
+	
+#endif
 
 //
 // Input constants
